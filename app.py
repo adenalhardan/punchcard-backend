@@ -11,7 +11,7 @@ prefix = 'punchcard:'
 
 @app.get('/')
 async def root():
-    return {'message': 'all good'}
+    return {'message': 'its all good'}
 
 @app.get('/get-name')
 async def get_name():
