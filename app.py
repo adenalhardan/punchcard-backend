@@ -5,7 +5,7 @@ import random
 import string
 
 app = FastAPI()
-handler = Mangum(app, spec_version = 2)
+handler = Mangum(app)
 
 prefix = 'punchcard:'
 
