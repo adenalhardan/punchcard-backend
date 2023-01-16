@@ -36,4 +36,4 @@ def execute(sql):
         resourceArn = database_cluster_arn,
         sql = sql
     )
-    return response
+    return response['records']
