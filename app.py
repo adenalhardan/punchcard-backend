@@ -21,7 +21,7 @@ def execute(sql):
         sql = sql
     )
 
-    return json.loads(response['records'])
+    return response['records']
 
 @app.get('/')
 async def root():
