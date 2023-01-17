@@ -12,7 +12,7 @@ params = json.load(open('params.json'))
 app = FastAPI()
 handler = Mangum(app)
 
-rds_client = boto3.client('rds-data')
+rds_client = boto3.client('rds-data', region_name = 'us-west-1')
 
 def execute(sql):
     response = rds_client.execute_statement(
@@ -39,6 +39,8 @@ async def get_name():
 
 @app.post('/post-form')
 async def post_form(id: str, host_id: str, event_title: str, fields: str):
+    event_title = urllib.parse.unquote_plus(event_title)
+
     if not execute(f'SELECT * FROM punchcard.event WHERE host_id = {host_id} AND title = {event_title}'):
         return {'status': 'error', 'message': 'event does not exist'}
 
@@ -67,12 +69,14 @@ async def post_form(id: str, host_id: str, event_title: str, fields: str):
 
 @app.post('/post-event')
 async def post_event(host_id: str, title: str, host_name: str, fields: str):
-    fields = json.loads(urllib.unquote_plus(fields))
-    return fields
-    '''
+    title = urllib.parse.unquote_plus(title)
+    host_name = urllib.parse.unquote_plus(host_name)
+    
+    fields = json.loads(urllib.parse.unquote_plus(fields))
+
     if len(execute(f'SELECT * FROM punchcard.event WHERE host_id = {host_id} AND title = {title}')) > 0:
         return {'status': 'error', 'message': 'host already created event of same title'}
-
+    
     for name in fields:
         if [key for key in fields[name]] != ['data_type', 'data_presence']:
             return {'status': 'error', 'message': name + ' field not formatted correctly'}
@@ -89,7 +93,6 @@ async def post_event(host_id: str, title: str, host_name: str, fields: str):
 
     execute(f'INSERT INTO punchcard.event VALUES({host_id}, {title}, {host_name}, {fields})')
     return {'status': 'success'}
-    '''
 
 @app.get('/get-forms')
 async def get_forms(host_id: str, event_title: str):
