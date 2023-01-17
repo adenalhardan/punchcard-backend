@@ -89,7 +89,7 @@ async def post_event(host_id: str, title: str, host_name: str, fields: str):
         if data_presence not in params['data_presences']:
             return {'status': 'error', 'message': name + ' field data presence not supported'}
 
-    fields = json.dumps(fields)
+    fields = urllib.parse.quote_plus(json.dumps(fields))
 
     execute(f'INSERT INTO punchcard.event VALUES({host_id}, {title}, {host_name}, {fields})')
     return {'status': 'success'}
@@ -106,4 +106,4 @@ async def get_events(host_id: str):
 
 @app.get('/test-db')
 async def test_db():
-    return execute(f'SELECT * FROM punchcard.event')
+    return execute(f'INSERT INTO punchcard.event VALUES(abcde, AVC, Bob, %7B%22name%22%3A+%7B%22data_type%22%3A+%22string%22%2C+%22data_presence%22%3A+%22required%22%7D%7D)')
