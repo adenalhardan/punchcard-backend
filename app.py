@@ -20,8 +20,8 @@ def execute(sql):
         resourceArn = params['database_cluster_arn'],
         sql = sql
     )
-    
-    return json.loads(response['records']['body'])
+
+    return json.loads(response['records'])
 
 @app.get('/')
 async def root():
