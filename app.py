@@ -14,13 +14,16 @@ handler = Mangum(app)
 
 rds_client = boto3.client('rds-data', region_name = 'us-west-1')
 
-def execute(sql):
+def execute(sql, posting = False):
     response = rds_client.execute_statement(
         secretArn = params['database_credentials_secret_store_arn'],
         database = params['database_name'],
         resourceArn = params['database_cluster_arn'],
         sql = sql
     )
+
+    if posting:
+        return {'status': 'success'}
 
     return response['records']
 
