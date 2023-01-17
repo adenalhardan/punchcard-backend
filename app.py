@@ -68,7 +68,8 @@ async def post_form(id: str, host_id: str, event_title: str, fields: str):
 @app.post('/post-event')
 async def post_event(host_id: str, title: str, host_name: str, fields: str):
     fields = json.loads(urllib.unquote_plus(fields))
-
+    return fields
+    '''
     if len(execute(f'SELECT * FROM punchcard.event WHERE host_id = {host_id} AND title = {title}')) > 0:
         return {'status': 'error', 'message': 'host already created event of same title'}
 
@@ -88,6 +89,7 @@ async def post_event(host_id: str, title: str, host_name: str, fields: str):
 
     execute(f'INSERT INTO punchcard.event VALUES({host_id}, {title}, {host_name}, {fields})')
     return {'status': 'success'}
+    '''
 
 @app.get('/get-forms')
 async def get_forms(host_id: str, event_title: str):
