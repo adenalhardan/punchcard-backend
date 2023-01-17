@@ -96,8 +96,14 @@ async def post_event(host_id: str, title: str, host_name: str, fields: str):
 
 @app.get('/get-forms')
 async def get_forms(host_id: str, event_title: str):
+    event_title = urllib.parse.unquote_plus(event_title)
+
     return execute(f'SELECT * FROM punchcard.form WHERE host_id = {host_id} AND event_title = {event_title}')
 
-@app.get('/get-event')
-async def get_event(host_id: str):
+@app.get('/get-events')
+async def get_events(host_id: str):
     return execute(f'SELECT * FROM punchcard.event WHERE host_id = {host_id}')
+
+@app.get('/test-db')
+async def test_db():
+    return execute(f'SELECT * FROM punchcard.event')
