@@ -10,7 +10,7 @@ CREATE TABLE form (
     id VARCHAR(255),
     host_id VARCHAR(255),
     event_title VARCHAR(255),
-    event_fields TEXT NOT NULL,
-    PRIMARY KEY (id, host_id, title),
+    fields TEXT NOT NULL,
+    PRIMARY KEY (id, host_id, event_title),
     FOREIGN KEY (host_id, event_title) REFERENCES event(host_id, title)
 );

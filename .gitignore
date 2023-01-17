@@ -129,3 +129,7 @@ dmypy.json
 .pyre/
 
 *.zip
+
+# Visual studio
+.vscode
+.vs
