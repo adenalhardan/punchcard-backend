@@ -1,6 +1,7 @@
 import random
 import string
 import json
+import urllib.parse
 
 from fastapi import FastAPI
 from mangum import Mangum
@@ -44,6 +45,7 @@ async def post_form(id: str, host_id: str, event_title: str, fields: str):
     event = execute(f'SELECT * FROM punchcard.event WHERE host_id = {host_id} AND title = {event_title}')[0]
     event_fields = json.loads(event['fields'])
 
+    fields = urllib.unquote_plus(fields)
     form_fields = json.loads(fields)
 
     if [name for name in event_fields] != [name for name in form_fields]:
@@ -60,11 +62,12 @@ async def post_form(id: str, host_id: str, event_title: str, fields: str):
             return {'status': 'error', 'message': name + 'field is the incorrect type'}
 
     execute(f'INSERT INTO punchcard.form VALUES({id}, {host_id}, {event_title}, {fields})')
+    return {'status': 'success'}
     
 
 @app.post('/post-event')
 async def post_event(host_id: str, title: str, host_name: str, fields: str):
-    fields = json.loads(fields)
+    fields = json.loads(urllib.unquote_plus(fields))
 
     if len(execute(f'SELECT * FROM punchcard.event WHERE host_id = {host_id} AND title = {title}')) > 0:
         return {'status': 'error', 'message': 'host already created event of same title'}
@@ -84,7 +87,6 @@ async def post_event(host_id: str, title: str, host_name: str, fields: str):
     fields = json.dumps(fields)
 
     execute(f'INSERT INTO punchcard.event VALUES({host_id}, {title}, {host_name}, {fields})')
-
     return {'status': 'success'}
 
 @app.get('/get-forms')
