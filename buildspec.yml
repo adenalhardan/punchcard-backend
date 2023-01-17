@@ -13,6 +13,7 @@ phases:
       - zip -r9 ../deployment_package.zip .
       - cd ..
       - zip -g deployment_package.zip app.py
+      - zip -g deployment_package.zip params.json
   post_build:
     commands:
       - echo "Updating lambda function..."

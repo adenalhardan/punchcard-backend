@@ -1,39 +1,53 @@
+import random
+import string
+import json
+
 from fastapi import FastAPI
 from mangum import Mangum
 import boto3
 
-import random
-import string
+params = json.load(open('params.json'))
 
 app = FastAPI()
 handler = Mangum(app)
 
-database_name = 'punchcard'
-database_cluster_arn = 'arn:aws:rds:us-west-1:648352157129:cluster:punchcard'
-database_credentials_secret_store_arn = 'arn:aws:secretsmanager:us-west-1:648352157129:secret:rds-db-credentials/cluster-E2JST6UE4XRFDW2SVOKMPWGEIQ/admin/1673905435773-76ZLCx'
-
 rds_client = boto3.client('rds-data')
 
-prefix = 'punchcard:'
+def execute(sql):
+    response = rds_client.execute_statement(
+        secretArn = params['database_credentials_secret_store_arn'],
+        database = params['database_name'],
+        resourceArn = params['database_cluster_arn'],
+        sql = sql
+    )
+    
+    return json.loads(response['records']['body'])
 
 @app.get('/')
 async def root():
     return {'message': 'its all good'}
 
-@app.get('/get-name')
-async def get_name():
-    name = ''.join(random.choices(string.ascii_letters + string.digits, k = 5))
-    return {'name': prefix + name}
+@app.get('get-prefix')
+async def get_prefix():
+    return {'prefix': params['prefix']}
 
-@app.get('/test-db')
-async def test_db():
-    return execute('SELECT * FROM punchcard.event')
-    
-def execute(sql):
-    response = rds_client.execute_statement(
-        secretArn = database_credentials_secret_store_arn,
-        database = database_name,
-        resourceArn = database_cluster_arn,
-        sql = sql
-    )
-    return response['records']
+@app.get('/get-id')
+async def get_name():
+    id = ''.join(random.choices(string.ascii_letters + string.digits, k = 5))
+    return {'id': id}
+
+@app.post('/post-form')
+async def post_form(event_id: str, fields: str):
+    return {}
+
+@app.post('/post-event')
+async def post_event(host_id: str, title: str, host_name: str, fields: str):
+    return {}
+
+@app.get('/get-forms')
+async def get_forms(event_id: str):
+    return {}
+
+@app.get('/get-event')
+async def get_event(host_id: str):
+    return {}
