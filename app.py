@@ -27,9 +27,13 @@ def execute(sql):
 async def root():
     return {'message': 'its all good'}
 
-@app.get('get-prefix')
+@app.get('/get-prefix')
 async def get_prefix():
     return {'prefix': params['prefix']}
+
+@app.get('/test-db')
+async def test_db():
+    return execute('SELECT * FROM punchcard.event')
 
 @app.get('/get-id')
 async def get_name():
