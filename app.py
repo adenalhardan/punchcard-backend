@@ -22,13 +22,21 @@ handler = Mangum(app)
 rds_client = boto3.client('rds-data', region_name = 'us-west-1')
 
 def execute(sql, args = []):
-    response = rds_client.execute_statement(
-        secretArn = params['database_credentials_secret_store_arn'],
-        database = params['database_name'],
-        resourceArn = params['database_cluster_arn'],
-        sql = sql,
-        parameters = args
-    )
+    if args:
+        response = rds_client.execute_statement(
+            secretArn = params['database_credentials_secret_store_arn'],
+            database = params['database_name'],
+            resourceArn = params['database_cluster_arn'],
+            sql = sql,
+            parameters = args
+        )
+    else:
+        response = rds_client.execute_statement(
+            secretArn = params['database_credentials_secret_store_arn'],
+            database = params['database_name'],
+            resourceArn = params['database_cluster_arn'],
+            sql = sql
+        )
 
     if args:
         if response['ResponseMetadata']['HTTPStatusCode'] == 200:
