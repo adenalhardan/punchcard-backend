@@ -24,10 +24,7 @@ def execute(sql, args = []):
     )
 
     if args:
-        if response['ResponseMetadata']['HTTPStatusCode'] == 200:
-            return {'status': 'success'}  
-        else:
-            return {'status': 'error', 'message': 'could not insert into database'}
+        return {'response from execute func': response}
 
     return response['records']
 
@@ -130,5 +127,5 @@ async def test_db():
         {'name': 'host_name', 'value': {'stringValue': 'Prof. Bob'}},
         {'name': 'fields', 'value': {'stringValue': '{"name": {"data_type": "string", "data_presence": "required"}}'}}
     ]
-    
+
     return execute(f'INSERT INTO punchcard.event VALUES(:host_id, :title, :host_name, :fields)', args)
