@@ -24,7 +24,10 @@ def execute(sql, args = []):
     )
 
     if args:
-        return {'response from execute func': response}
+        if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+            return {'status': 'success'}  
+        else:
+            return {'status': 'error', 'message': 'could not insert into database'}
 
     return response['records']
 
@@ -120,12 +123,12 @@ async def get_events(host_id: str):
     return execute(f'SELECT * FROM punchcard.event WHERE host_id = {host_id}')
 
 @app.get('/test-db')
-async def test_db():
+async def test_db(host_id: str):
     args = [
-        {'name': 'host_id', 'value': {'stringValue': 'abcd'}},
+        {'name': 'host_id', 'value': {'stringValue': host_id}},
         {'name': 'title', 'value': {'stringValue': 'CS-UY 1234'}},
         {'name': 'host_name', 'value': {'stringValue': 'Prof. Bob'}},
         {'name': 'fields', 'value': {'stringValue': '{"name": {"data_type": "string", "data_presence": "required"}}'}}
     ]
-
+    
     return execute(f'INSERT INTO punchcard.event VALUES(:host_id, :title, :host_name, :fields)', args)
