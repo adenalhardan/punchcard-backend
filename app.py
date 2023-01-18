@@ -62,11 +62,13 @@ async def post_form(form: Form):
     event_title = urllib.parse.unquote_plus(form.event_title)
     fields = urllib.parse.unquote_plus(form.fields)
 
-    if not execute(f'SELECT * FROM punchcard.event WHERE host_id = "{form.host_id}" AND title = "{event_title}"'):
+    response = execute(f'SELECT * FROM punchcard.event WHERE host_id = "{form.host_id}" AND title = "{event_title}"')
+
+    if len(response) == 0:
         return {'status': 'error', 'message': 'event does not exist'}
 
-    event = execute(f'SELECT * FROM punchcard.event WHERE host_id = "{form.host_id}" AND title = "{event_title}"')[0]
-    event_fields = json.loads(event['fields'])
+    event = response[0]
+    event_fields = json.loads(event[3])
 
     form_fields = json.loads(fields)
 
