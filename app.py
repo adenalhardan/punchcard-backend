@@ -122,7 +122,7 @@ async def get_forms(host_id: str, event_title: str):
 async def get_events(host_id: str):
     return execute(f'SELECT * FROM punchcard.event WHERE host_id = {host_id}')
 
-@app.get('/test-db')
+@app.post('/test-db')
 async def test_db(host_id: str, fields: str):
     fields = urllib.parse.unquote_plus(fields)
     args = [
