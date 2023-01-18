@@ -14,16 +14,22 @@ handler = Mangum(app)
 
 rds_client = boto3.client('rds-data', region_name = 'us-west-1')
 
-def execute(sql, parameters = []):
+def execute(sql, args = []):
     response = rds_client.execute_statement(
         secretArn = params['database_credentials_secret_store_arn'],
         database = params['database_name'],
         resourceArn = params['database_cluster_arn'],
         sql = sql,
-        parameters = parameters
+        parameters = args
     )
-    # might add pack records keyin below ['records']
-    return response
+
+    if args:
+        if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+            return {'status': 'success'}  
+        else:
+            return {'status': 'error', 'message': 'could not insert into database'}
+
+    return response['records']
 
 @app.get('/')
 async def root():
@@ -41,6 +47,7 @@ async def get_name():
 @app.post('/post-form')
 async def post_form(id: str, host_id: str, event_title: str, fields: str):
     event_title = urllib.parse.unquote_plus(event_title)
+    fields = urllib.unquote_plus(fields)
 
     if not execute(f'SELECT * FROM punchcard.event WHERE host_id = {host_id} AND title = {event_title}'):
         return {'status': 'error', 'message': 'event does not exist'}
@@ -48,7 +55,6 @@ async def post_form(id: str, host_id: str, event_title: str, fields: str):
     event = execute(f'SELECT * FROM punchcard.event WHERE host_id = {host_id} AND title = {event_title}')[0]
     event_fields = json.loads(event['fields'])
 
-    fields = urllib.unquote_plus(fields)
     form_fields = json.loads(fields)
 
     if [name for name in event_fields] != [name for name in form_fields]:
@@ -64,15 +70,20 @@ async def post_form(id: str, host_id: str, event_title: str, fields: str):
         if (data_type == 'integer' and type(data) is not int) or (data_type == 'string' and type(data) is not str):
             return {'status': 'error', 'message': name + 'field is the incorrect type'}
 
-    execute(f'INSERT INTO punchcard.form VALUES({id}, {host_id}, {event_title}, {fields})')
-    return {'status': 'success'}
+    args = [
+        {'name': 'id', 'value': {'stringValue': id}},
+        {'name': 'host_id', 'value': {'stringValue': host_id}},
+        {'name': 'event_title', 'value': {'stringValue': event_title}},
+        {'name': 'fields', 'value': {'stringValue': fields}}
+    ]
+
+    return execute('INSERT INTO punchcard.form VALUES(:id, :host_id, :event_title, :fields)', args)
     
 
 @app.post('/post-event')
 async def post_event(host_id: str, title: str, host_name: str, fields: str):
     title = urllib.parse.unquote_plus(title)
     host_name = urllib.parse.unquote_plus(host_name)
-    
     fields = json.loads(urllib.parse.unquote_plus(fields))
 
     if len(execute(f'SELECT * FROM punchcard.event WHERE host_id = {host_id} AND title = {title}')) > 0:
@@ -90,10 +101,16 @@ async def post_event(host_id: str, title: str, host_name: str, fields: str):
         if data_presence not in params['data_presences']:
             return {'status': 'error', 'message': name + ' field data presence not supported'}
 
-    fields = urllib.parse.quote_plus(json.dumps(fields))
+    fields = json.dumps(fields)
 
-    execute(f'INSERT INTO punchcard.event VALUES({host_id}, {title}, {host_name}, {fields})')
-    return {'status': 'success'}
+    args = [
+        {'name': 'host_id', 'value': {'stringValue': host_id}},
+        {'name': 'title', 'value': {'stringValue': title}},
+        {'name': 'host_name', 'value': {'stringValue': host_name}},
+        {'name': 'fields', 'value': {'stringValue': fields}}
+    ]
+
+    return execute(f'INSERT INTO punchcard.event VALUES(:host_id, :title, :host_name, :fields)', args)
 
 @app.get('/get-forms')
 async def get_forms(host_id: str, event_title: str):
@@ -107,10 +124,11 @@ async def get_events(host_id: str):
 
 @app.get('/test-db')
 async def test_db():
-    parameters = [
+    args = [
         {'name': 'host_id', 'value': {'stringValue': 'abcd'}},
         {'name': 'title', 'value': {'stringValue': 'CS-UY 1234'}},
         {'name': 'host_name', 'value': {'stringValue': 'Prof. Bob'}},
         {'name': 'fields', 'value': {'stringValue': '{"name": {"data_type": "string", "data_presence": "required"}}'}}
     ]
-    return execute(f'INSERT INTO punchcard.event VALUES(:host_id, :title, :host_name, :fields)', parameters)
+    
+    return execute(f'INSERT INTO punchcard.event VALUES(:host_id, :title, :host_name, :fields)', args)
