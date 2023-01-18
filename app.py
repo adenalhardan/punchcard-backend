@@ -67,8 +67,11 @@ async def post_form(form: Form):
     if len(response) == 0:
         return {'status': 'error', 'message': 'event does not exist'}
 
-    event = response[0]
-    event_fields = json.loads(event[3])
+    try:
+        event = response[0]
+        event_fields = json.loads(event[3]['stringValue'])
+    except:
+        return {"event": event}
 
     form_fields = json.loads(fields)
 
