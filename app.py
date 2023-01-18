@@ -6,8 +6,15 @@ import urllib.parse
 from fastapi import FastAPI
 from mangum import Mangum
 import boto3
+from pydantic import BaseModel
 
 params = json.load(open('params.json'))
+
+class Event(BaseModel):
+    host_id: str
+    title: str
+    host_name: str
+    fields: str
 
 app = FastAPI()
 handler = Mangum(app)
@@ -123,12 +130,13 @@ async def get_events(host_id: str):
     return execute(f'SELECT * FROM punchcard.event WHERE host_id = {host_id}')
 
 @app.post('/test-db')
-async def test_db(host_id: str, fields: str):
-    fields = urllib.parse.unquote_plus(fields)
+async def test_db(event: Event):
+    fields = urllib.parse.unquote_plus(event.fields)
+
     args = [
-        {'name': 'host_id', 'value': {'stringValue': host_id}},
-        {'name': 'title', 'value': {'stringValue': 'CS-UY 1234'}},
-        {'name': 'host_name', 'value': {'stringValue': 'Prof. Bob'}},
+        {'name': 'host_id', 'value': {'stringValue': event.host_id}},
+        {'name': 'title', 'value': {'stringValue': urllib.parse.unquote_plus(event.title)}},
+        {'name': 'host_name', 'value': {'stringValue': urllib.parse.unquote_plus(event.host_name)}},
         {'name': 'fields', 'value': {'stringValue': fields}}
     ]
     return {
