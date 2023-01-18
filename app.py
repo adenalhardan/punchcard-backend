@@ -100,14 +100,11 @@ async def post_event(event: Event):
     title = urllib.parse.unquote_plus(event.title)
     host_name = urllib.parse.unquote_plus(event.host_name)
     fields = json.loads(urllib.parse.unquote_plus(event.fields))
-    try:
-        return execute(f'SELECT * FROM punchcard.event WHERE host_id = "{event.host_id}" AND title = "{title}"')
-    except:
-        return {"title": title, "host_id": event.host_id}
-    '''
-    if len(execute(f'SELECT * FROM punchcard.event WHERE host_id = {event.host_id} AND title = {title}')) > 0:
-        return {'status': 'error', 'message': 'host already created event of same title'}
+
     
+    if len(execute(f'SELECT * FROM punchcard.event WHERE host_id = "{event.host_id}" AND title = "{title}"')) > 0:
+        return {'status': 'error', 'message': 'host already created event of same title'}
+    '''
     for name in fields:
         if set([key for key in fields[name]]) != set(['data_type', 'data_presence']):
             return {'status': 'error', 'message': name + ' field not formatted correctly'}
