@@ -16,6 +16,12 @@ class Event(BaseModel):
     host_name: str
     fields: str
 
+class Form(BaseModel):
+    id: str
+    host_id: str
+    event_title: str
+    fields: str
+
 app = FastAPI()
 handler = Mangum(app)
 
@@ -52,14 +58,14 @@ async def get_name():
     return {'id': id}
 
 @app.post('/post-form')
-async def post_form(id: str, host_id: str, event_title: str, fields: str):
-    event_title = urllib.parse.unquote_plus(event_title)
-    fields = urllib.unquote_plus(fields)
+async def post_form(form: Form):
+    event_title = urllib.parse.unquote_plus(form.event_title)
+    fields = urllib.parse.unquote_plus(form.fields)
 
-    if not execute(f'SELECT * FROM punchcard.event WHERE host_id = "{host_id}" AND title = "{event_title}"'):
+    if not execute(f'SELECT * FROM punchcard.event WHERE host_id = "{form.host_id}" AND title = "{event_title}"'):
         return {'status': 'error', 'message': 'event does not exist'}
 
-    event = execute(f'SELECT * FROM punchcard.event WHERE host_id = "{host_id}" AND title = "{event_title}"')[0]
+    event = execute(f'SELECT * FROM punchcard.event WHERE host_id = "{form.host_id}" AND title = "{event_title}"')[0]
     event_fields = json.loads(event['fields'])
 
     form_fields = json.loads(fields)
@@ -78,8 +84,8 @@ async def post_form(id: str, host_id: str, event_title: str, fields: str):
             return {'status': 'error', 'message': name + 'field is the incorrect type'}
 
     args = [
-        {'name': 'id', 'value': {'stringValue': id}},
-        {'name': 'host_id', 'value': {'stringValue': host_id}},
+        {'name': 'id', 'value': {'stringValue': form.id}},
+        {'name': 'host_id', 'value': {'stringValue': form.host_id}},
         {'name': 'event_title', 'value': {'stringValue': event_title}},
         {'name': 'fields', 'value': {'stringValue': fields}}
     ]
@@ -129,16 +135,3 @@ async def get_forms(host_id: str, event_title: str):
 @app.get('/get-events')
 async def get_events(host_id: str):
     return execute(f'SELECT * FROM punchcard.event WHERE host_id = "{host_id}"')
-
-@app.post('/test-db')
-async def test_db(event: Event):
-    args = [
-        {'name': 'host_id', 'value': {'stringValue': event.host_id}},
-        {'name': 'title', 'value': {'stringValue': urllib.parse.unquote_plus(event.title)}},
-        {'name': 'host_name', 'value': {'stringValue': urllib.parse.unquote_plus(event.host_name)}},
-        {'name': 'fields', 'value': {'stringValue': urllib.parse.unquote_plus(event.fields)}}
-    ]
-    return {
-        "res": execute(f'INSERT INTO punchcard.event VALUES(:host_id, :title, :host_name, :fields)', args),
-        "fields": json.loads(urllib.parse.unquote_plus(event.fields))
-    }
