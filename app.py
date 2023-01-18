@@ -134,10 +134,10 @@ async def test_db(event: Event):
     fields = urllib.parse.unquote_plus(event.fields)
 
     args = [
-        {'name': 'host_id', 'value': {'stringValue': event.host_id}},
-        {'name': 'title', 'value': {'stringValue': urllib.parse.unquote_plus(event.title)}},
-        {'name': 'host_name', 'value': {'stringValue': urllib.parse.unquote_plus(event.host_name)}},
-        {'name': 'fields', 'value': {'stringValue': fields}}
+        {'name': 'host_id', 'value': {'stringValue': 'sdfs'}},
+        {'name': 'title', 'value': {'stringValue': 'CLASS'}},
+        {'name': 'host_name', 'value': {'stringValue': 'BOB'}},
+        {'name': 'fields', 'value': {'stringValue': '{}'}}
     ]
     return {
         "res": execute(f'INSERT INTO punchcard.event VALUES(:host_id, :title, :host_name, :fields)', args),
