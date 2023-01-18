@@ -101,7 +101,7 @@ async def post_event(event: Event):
     host_name = urllib.parse.unquote_plus(event.host_name)
     fields = json.loads(urllib.parse.unquote_plus(event.fields))
     try:
-        return execute(f'SELECT * FROM punchcard.event WHERE host_id = {event.host_id} AND title = {title}')
+        return execute(f'SELECT * FROM punchcard.event WHERE host_id = "{event.host_id}" AND title = "{title}"')
     except:
         return {"title": title, "host_id": event.host_id}
     '''
