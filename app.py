@@ -64,7 +64,7 @@ async def post_form(id: str, host_id: str, event_title: str, fields: str):
     event_title = urllib.parse.unquote_plus(event_title)
     fields = urllib.unquote_plus(fields)
 
-    if not execute(f'SELECT * FROM punchcard.event WHERE host_id = {host_id} AND title = {event_title}'):
+    if not execute(f'SELECT * FROM punchcard.event WHERE host_id = "{host_id}" AND title = "{event_title}"'):
         return {'status': 'error', 'message': 'event does not exist'}
 
     event = execute(f'SELECT * FROM punchcard.event WHERE host_id = {host_id} AND title = {event_title}')[0]
@@ -139,7 +139,7 @@ async def get_forms(host_id: str, event_title: str):
 
 @app.get('/get-events')
 async def get_events(host_id: str):
-    return execute(f'SELECT * FROM punchcard.event WHERE host_id = {host_id}')
+    return execute(f'SELECT * FROM punchcard.event WHERE host_id = "{host_id}"')
 
 @app.post('/test-db')
 async def test_db(event: Event):
