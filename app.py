@@ -88,12 +88,12 @@ async def post_form(id: str, host_id: str, event_title: str, fields: str):
     
 
 @app.post('/post-event')
-async def post_event(host_id: str, title: str, host_name: str, fields: str):
-    title = urllib.parse.unquote_plus(title)
-    host_name = urllib.parse.unquote_plus(host_name)
-    fields = json.loads(urllib.parse.unquote_plus(fields))
+async def post_event(event: Event):
+    title = urllib.parse.unquote_plus(event.title)
+    host_name = urllib.parse.unquote_plus(event.host_name)
+    fields = json.loads(urllib.parse.unquote_plus(event.fields))
 
-    if len(execute(f'SELECT * FROM punchcard.event WHERE host_id = {host_id} AND title = {title}')) > 0:
+    if len(execute(f'SELECT * FROM punchcard.event WHERE host_id = {event.host_id} AND title = {title}')) > 0:
         return {'status': 'error', 'message': 'host already created event of same title'}
     
     for name in fields:
@@ -111,7 +111,7 @@ async def post_event(host_id: str, title: str, host_name: str, fields: str):
     fields = json.dumps(fields)
 
     args = [
-        {'name': 'host_id', 'value': {'stringValue': host_id}},
+        {'name': 'host_id', 'value': {'stringValue': event.host_id}},
         {'name': 'title', 'value': {'stringValue': title}},
         {'name': 'host_name', 'value': {'stringValue': host_name}},
         {'name': 'fields', 'value': {'stringValue': fields}}
@@ -132,7 +132,7 @@ async def get_events(host_id: str):
 @app.post('/test-db')
 async def test_db(event: Event):
     fields = urllib.parse.unquote_plus(event.fields)
-
+    
     args = [
         {'name': 'host_id', 'value': {'stringValue': 'sdfs'}},
         {'name': 'title', 'value': {'stringValue': 'CLASS'}},
