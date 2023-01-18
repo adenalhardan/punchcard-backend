@@ -139,5 +139,5 @@ async def test_db(event: Event):
     ]
     return {
         "res": execute(f'INSERT INTO punchcard.event VALUES(:host_id, :title, :host_name, :fields)', args),
-        "fields": urllib.parse.unquote_plus(event.fields)
+        "fields": json.loads(urllib.parse.unquote_plus(event.fields))
     }
