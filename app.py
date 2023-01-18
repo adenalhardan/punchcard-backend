@@ -57,7 +57,7 @@ async def post_form(id: str, host_id: str, event_title: str, fields: str):
 
     form_fields = json.loads(fields)
 
-    if [name for name in event_fields] != [name for name in form_fields]:
+    if set([name for name in event_fields]) != set([name for name in form_fields]):
         return {'status': 'error', 'message': 'form fields do not match event fields'}
 
     for name in form_fields:
@@ -90,7 +90,7 @@ async def post_event(host_id: str, title: str, host_name: str, fields: str):
         return {'status': 'error', 'message': 'host already created event of same title'}
     
     for name in fields:
-        if [key for key in fields[name]] != ['data_type', 'data_presence']:
+        if set([key for key in fields[name]]) != set(['data_type', 'data_presence']):
             return {'status': 'error', 'message': name + ' field not formatted correctly'}
  
         data_type, data_presence = fields[name]['data_type'], fields[name]['data_presence']
@@ -123,12 +123,15 @@ async def get_events(host_id: str):
     return execute(f'SELECT * FROM punchcard.event WHERE host_id = {host_id}')
 
 @app.get('/test-db')
-async def test_db(host_id: str):
+async def test_db(host_id: str, fields: str):
+    fields = urllib.parse.unquote_plus(fields)
     args = [
         {'name': 'host_id', 'value': {'stringValue': host_id}},
         {'name': 'title', 'value': {'stringValue': 'CS-UY 1234'}},
         {'name': 'host_name', 'value': {'stringValue': 'Prof. Bob'}},
-        {'name': 'fields', 'value': {'stringValue': '{"name": {"data_type": "string", "data_presence": "required"}}'}}
+        {'name': 'fields', 'value': {'stringValue': fields}}
     ]
-    
-    return execute(f'INSERT INTO punchcard.event VALUES(:host_id, :title, :host_name, :fields)', args)
+    return {
+        "res": execute(f'INSERT INTO punchcard.event VALUES(:host_id, :title, :host_name, :fields)', args),
+        "fields": json.loads(fields)
+    }
