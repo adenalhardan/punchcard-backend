@@ -92,7 +92,7 @@ async def post_event(event: Event):
     title = urllib.parse.unquote_plus(event.title)
     host_name = urllib.parse.unquote_plus(event.host_name)
     fields = json.loads(urllib.parse.unquote_plus(event.fields))
-    
+    '''
     if len(execute(f'SELECT * FROM punchcard.event WHERE host_id = {event.host_id} AND title = {title}')) > 0:
         return {'status': 'error', 'message': 'host already created event of same title'}
     
@@ -107,7 +107,7 @@ async def post_event(event: Event):
 
         if data_presence not in params['data_presences']:
             return {'status': 'error', 'message': name + ' field data presence not supported'}
-
+    '''
     fields = json.dumps(fields)
 
     args = [
