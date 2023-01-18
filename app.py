@@ -14,18 +14,16 @@ handler = Mangum(app)
 
 rds_client = boto3.client('rds-data', region_name = 'us-west-1')
 
-def execute(sql, posting = False):
+def execute(sql, parameters = []):
     response = rds_client.execute_statement(
         secretArn = params['database_credentials_secret_store_arn'],
         database = params['database_name'],
         resourceArn = params['database_cluster_arn'],
-        sql = sql
+        sql = sql,
+        parameters = parameters
     )
-
-    if posting:
-        return {'status': 'success'}
-
-    return response['records']
+    # might add pack records keyin below ['records']
+    return response
 
 @app.get('/')
 async def root():
@@ -109,4 +107,10 @@ async def get_events(host_id: str):
 
 @app.get('/test-db')
 async def test_db():
-    return execute(f'INSERT INTO punchcard.event VALUES(abcde, AVC, Bob, %7B%22name%22%3A+%7B%22data_type%22%3A+%22string%22%2C+%22data_presence%22%3A+%22required%22%7D%7D)')
+    parameters = [
+        {'name': 'host_id', 'value': {'stringValue': 'abcd'}},
+        {'name': 'title', 'value': {'stringValue': 'CS-UY 1234'}},
+        {'name': 'host_name', 'value': {'stringValue': 'Prof. Bob'}},
+        {'name': 'fields', 'value': {'stringValue': '{"name": {"data_type": "string", "data_presence": "required"}}'}}
+    ]
+    return execute(f'INSERT INTO punchcard.event VALUES(:host_id, :title, :host_name, :fields)', parameters)
