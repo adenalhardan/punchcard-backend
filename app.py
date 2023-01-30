@@ -153,7 +153,7 @@ async def get_events(host_id: str):
     for values in response:
         event = {}
 
-        for key, value in zip(params['event_keys', values]):
+        for key, value in zip(params['event_keys'], values):
             event[key] = value['stringValue']
 
         events.append(event)
