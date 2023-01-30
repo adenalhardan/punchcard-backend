@@ -139,7 +139,10 @@ async def get_forms(host_id: str, event_title: str):
         form = {}
 
         for key, value in zip(params['form_keys'], values):
-            form[key] = value['stringValue']
+            if key == 'fields':
+                form[key] = json.loads(value['stringValue'])
+            else:
+                form[key] = value['stringValue']
 
         forms.append(form)
     
@@ -154,7 +157,10 @@ async def get_events(host_id: str):
         event = {}
 
         for key, value in zip(params['event_keys'], values):
-            event[key] = value['stringValue']
+            if key == 'fields':
+                event[key] = json.loads(value['stringValue'])
+            else:
+                event[key] = value['stringValue']
 
         events.append(event)
 
