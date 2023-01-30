@@ -132,8 +132,30 @@ async def post_event(event: Event):
 async def get_forms(host_id: str, event_title: str):
     event_title = urllib.parse.unquote_plus(event_title)
 
-    return execute(f'SELECT * FROM punchcard.form WHERE host_id = "{host_id}" AND event_title = "{event_title}"')
+    response = execute(f'SELECT * FROM punchcard.form WHERE host_id = "{host_id}" AND event_title = "{event_title}"')
+    forms = []
+
+    for values in response:
+        form = {}
+
+        for key, value in zip(params['form_keys'], values):
+            form[key] = value['stringValue']
+
+        forms.append(form)
+    
+    return forms
 
 @app.get('/get-events')
 async def get_events(host_id: str):
-    return execute(f'SELECT * FROM punchcard.event WHERE host_id = "{host_id}"')
+    response = execute(f'SELECT * FROM punchcard.event WHERE host_id = "{host_id}"')
+    events = []
+
+    for values in response:
+        event = {}
+
+        for key, value in zip(params['event_keys', values]):
+            event[key] = value['stringValue']
+
+        events.append(event)
+
+    return events
