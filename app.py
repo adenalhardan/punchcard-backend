@@ -108,7 +108,7 @@ async def post_event(event: Event):
     
     for field in fields:
         if set([key for key in field]) != set(['name', 'type', 'presence']):
-            return {'status': 'error', 'message': 'field not formatted correctly' + ' '.join([key for key in field])}
+            return {'status': 'error', 'message': 'field not formatted correctly' + str(field)}
  
         name, field_type, field_presence = field['name'], field['type'], field['presence']
 
