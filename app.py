@@ -103,10 +103,12 @@ async def post_event(event: Event):
     
     if len(execute(f'SELECT * FROM punchcard.event WHERE host_id = "{event.host_id}" AND title = "{title}"')) > 0:
         return {'status': 'error', 'message': 'host already created event of same title'}
+
+    required_flag = True
     
     for field in fields:
         if set([key for key in field]) != set(['name', 'type', 'presence']):
-            return {'status': 'error', 'message': 'field not formatted correctly'}
+            return {'status': 'error', 'message': 'field not formatted correctly' + ' '.join([key for key in field])}
  
         name, field_type, field_presence = field['name'], field['type'], field['presence']
 
@@ -115,6 +117,12 @@ async def post_event(event: Event):
 
         if field_presence not in params['field_presences']:
             return {'status': 'error', 'message': name + ' field data presence not supported'}
+
+        if required_flag and field_presence == 'required':
+            required_flag = False
+
+    if required_flag:
+        return {'status': 'error', 'message': 'at least one field must be required'}
     
     fields = json.dumps(fields)
 
