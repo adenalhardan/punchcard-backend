@@ -72,17 +72,17 @@ async def post_form(form: Form):
 
     form_fields = json.loads(fields)
 
-    if [field['name'] for field in event_fields] != [field['name'] for field in form_fields]:
+    if set([field['name'] for field in event_fields]) != set([field['name'] for field in form_fields]):
         return {'status': 'error', 'message': 'form fields do not match event fields'}
 
     for event_field, form_field in zip(event_fields, form_fields):
-        name, data = form_field['name'], form_field['value']
+        name, value = form_field['name'], form_field['value']
         field_type, field_presence = event_field['type'], event_field['presence']
 
-        if field_presence == 'required' and not data:
+        if field_presence == 'required' and not value:
             return {'status': 'error', 'message': name + 'field is required'}
 
-        if (field_type == 'integer' and type(data) is not int) or (field_type == 'string' and type(data) is not str):
+        if (field_type == 'integer' and type(value) is not int) or (field_type == 'string' and type(value) is not str):
             return {'status': 'error', 'message': name + 'field is the incorrect type'}
 
     args = [
@@ -108,7 +108,7 @@ async def post_event(event: Event):
     
     for field in fields:
         if set([key for key in field]) != set(['name', 'type', 'presence']):
-            return {'status': 'error', 'message': 'field not formatted correctly' + str(fields)}
+            return {'status': 'error', 'message': 'field not formatted correctly'}
  
         name, field_type, field_presence = field['name'], field['type'], field['presence']
 
