@@ -72,17 +72,17 @@ async def post_form(form: Form):
 
     form_fields = json.loads(fields)
 
-    if set([name for name in event_fields]) != set([name for name in form_fields]):
+    if [field['name'] for field in event_fields] != [field['name'] for field in form_fields]:
         return {'status': 'error', 'message': 'form fields do not match event fields'}
 
-    for name in form_fields:
-        data = form_fields[name]
-        data_type, data_presence = event_fields[name]['data_type'], event_fields[name]['data_presence']
+    for event_field, form_field in zip(event_fields, form_fields):
+        name, data = form_field['name'], form_field['value']
+        field_type, field_presence = event_field['type'], event_field['presence']
 
-        if data_presence == 'required' and not data:
+        if field_presence == 'required' and not data:
             return {'status': 'error', 'message': name + 'field is required'}
 
-        if (data_type == 'integer' and type(data) is not int) or (data_type == 'string' and type(data) is not str):
+        if (field_type == 'integer' and type(data) is not int) or (field_type == 'string' and type(data) is not str):
             return {'status': 'error', 'message': name + 'field is the incorrect type'}
 
     args = [
@@ -100,21 +100,20 @@ async def post_event(event: Event):
     title = urllib.parse.unquote_plus(event.title)
     host_name = urllib.parse.unquote_plus(event.host_name)
     fields = json.loads(urllib.parse.unquote_plus(event.fields))
-
     
     if len(execute(f'SELECT * FROM punchcard.event WHERE host_id = "{event.host_id}" AND title = "{title}"')) > 0:
         return {'status': 'error', 'message': 'host already created event of same title'}
     
-    for name in fields:
-        if set([key for key in fields[name]]) != set(['data_type', 'data_presence']):
-            return {'status': 'error', 'message': name + ' field not formatted correctly'}
+    for field in fields:
+        if set([key for key in field]) != set(['name', 'type', 'presence']):
+            return {'status': 'error', 'message': 'field not formatted correctly'}
  
-        data_type, data_presence = fields[name]['data_type'], fields[name]['data_presence']
+        name, field_type, field_presence = field['name'], field['type'], field['presence']
 
-        if data_type not in params['data_types']:
+        if field_type not in params['field_types']:
             return {'status': 'error', 'message': name + ' field data type not supported'}
 
-        if data_presence not in params['data_presences']:
+        if field_presence not in params['field_presences']:
             return {'status': 'error', 'message': name + ' field data presence not supported'}
     
     fields = json.dumps(fields)

@@ -6,8 +6,8 @@
     "prefix": "punchcard:",
     "id_length": 5,
 
-    "data_types": ["integer", "string"],
-    "data_presences": ["required", "optional"],
+    "field_types": ["integer", "string"],
+    "field_presences": ["required", "optional"],
 
     "form_keys": ["id", "host_id", "event_title", "fields"],
     "event_keys": ["host_id", "title", "host_name", "fields"]
