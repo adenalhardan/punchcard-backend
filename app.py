@@ -153,7 +153,7 @@ async def get_forms(host_id: str, event_title: str):
 
         forms.append(form)
     
-    return forms
+    return {'forms': forms}
 
 @app.get('/get-events')
 async def get_events(host_id: str):
@@ -171,4 +171,4 @@ async def get_events(host_id: str):
 
         events.append(event)
 
-    return events
+    return {'events': events}
