@@ -189,7 +189,11 @@ async def delete_event(host_id: str, event_title: str):
             secretArn = params['database_credentials_secret_store_arn'],
             database = params['database_name'],
             resourceArn = params['database_cluster_arn'],
-            sql = f'DELETE FROM punchcard.event WHERE host_id = "{host_id}" AND title = "{event_title}"',
+            sql = f'DELETE FROM punchcard.event WHERE :host_id AND :title',
+            parameters = [
+                {'name': 'host_id', 'value': {'stringValue': host_id}},
+                {'name': 'title', 'value': {'stringValue': event_title}},
+            ]
         )
     event_response = execute(f'DELETE FROM punchcard.event WHERE host_id = "{host_id}" AND title = "{event_title}"', 'DELETE')
     form_response = execute(f'DELETE FROM punchcard.form WHERE host_id = "{host_id}" AND event_title = "{event_title}"', 'DELETE')
