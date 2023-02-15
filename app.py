@@ -189,7 +189,7 @@ async def delete_event(host_id: str, event_title: str):
             secretArn = params['database_credentials_secret_store_arn'],
             database = params['database_name'],
             resourceArn = params['database_cluster_arn'],
-            sql = f'DELETE FROM punchcard.event WHERE :host_id AND :title',
+            sql = f'DELETE FROM punchcard.event VALUES(:host_id, :title)',
             parameters = [
                 {'name': 'host_id', 'value': {'stringValue': host_id}},
                 {'name': 'title', 'value': {'stringValue': event_title}},
