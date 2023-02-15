@@ -161,7 +161,7 @@ async def get_forms(host_id: str, event_title: str):
 
 @app.get('/get-events')
 async def get_events(host_id: str):
-    response = execute(f'SELECT * FROM punchcard.event WHERE host_id = "{host_id}"')
+    response = execute(f'SELECT * FROM punchcard.event WHERE host_id = "{host_id}"', 'GET')
     events = []
 
     for values in response:
@@ -179,6 +179,11 @@ async def get_events(host_id: str):
 
 @app.delete('/delete-event')
 async def delete_event(host_id: str, event_title: str):
+    response = execute(f'SELECT * FROM punchcard.event WHERE host_id = "{host_id}" AND title = "{event_title}"', 'GET')
+
+    if len(response) == 0:
+        return {'status': 'error', 'message': 'event does not exist'}
+
     event_response = execute(f'DELETE FROM punchcard.event WHERE host_id = "{host_id}" AND title = "{event_title}"', 'DELETE')
     form_response = execute(f'DELETE FROM punchcard.event WHERE host_id = "{host_id}" AND event_title = "{event_title}"', 'DELETE')
 
