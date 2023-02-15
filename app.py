@@ -183,8 +183,8 @@ async def get_events(host_id: str):
 async def delete_event(host_id: str, event_title: str):
     event_title = urllib.parse.unquote_plus(event_title)
 
-    #response = execute(f'SELECT * FROM punchcard.event WHERE host_id = "{host_id}" AND title = "{event_title}"', 'GET')
-
+    response = execute(f'SELECT * FROM punchcard.event WHERE host_id = "{host_id}" AND title = "{event_title}"', 'GET')
+    return response
     #if len(response) == 0:
         #return {'status': 'error', 'message': 'event does not exist'}
 
