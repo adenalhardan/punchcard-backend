@@ -36,6 +36,8 @@ def execute(sql, type, args = []):
         parameters = args
     )
 
+    return response
+
     if type in ['POST', 'UPDATE', 'DELETE']:
         if response['ResponseMetadata']['HTTPStatusCode'] == 200:
             return {'status': 'success'}  
@@ -181,13 +183,15 @@ async def get_events(host_id: str):
 async def delete_event(host_id: str, event_title: str):
     event_title = urllib.parse.unquote_plus(event_title)
 
-    response = execute(f'SELECT * FROM punchcard.event WHERE host_id = "{host_id}" AND title = "{event_title}"', 'GET')
+    #response = execute(f'SELECT * FROM punchcard.event WHERE host_id = "{host_id}" AND title = "{event_title}"', 'GET')
 
-    if len(response) == 0:
-        return {'status': 'error', 'message': 'event does not exist'}
+    #if len(response) == 0:
+        #return {'status': 'error', 'message': 'event does not exist'}
 
     event_response = execute(f'DELETE FROM punchcard.event WHERE host_id = "{host_id}" AND title = "{event_title}"', 'DELETE')
     form_response = execute(f'DELETE FROM punchcard.form WHERE host_id = "{host_id}" AND event_title = "{event_title}"', 'DELETE')
+
+    return event_response
 
     if event_response['status'] == form_response['status'] == 'success':
         return event_response
