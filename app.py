@@ -27,7 +27,7 @@ handler = Mangum(app)
 
 rds_client = boto3.client('rds-data', region_name = 'us-west-1')
 
-def execute(sql, args = []):
+def execute(sql, type, args = []):
     response = rds_client.execute_statement(
         secretArn = params['database_credentials_secret_store_arn'],
         database = params['database_name'],
@@ -36,13 +36,16 @@ def execute(sql, args = []):
         parameters = args
     )
 
-    if args:
+    if type in ['POST', 'UPDATE', 'DELETE']:
         if response['ResponseMetadata']['HTTPStatusCode'] == 200:
             return {'status': 'success'}  
         else:
-            return {'status': 'error', 'message': 'could not insert into database'}
+            return {'status': 'error', 'message': 'could modify into database'}
 
-    return response['records']
+    elif type == 'GET':
+        return response['records']
+
+    return {'status': 'error', 'message': 'invalid type'}
 
 @app.get('/')
 async def root():
@@ -53,7 +56,7 @@ async def get_prefix():
     return {'prefix': params['prefix']}
 
 @app.get('/get-id')
-async def get_name():
+async def get_id():
     id = ''.join(random.choices(string.ascii_letters + string.digits, k = params['id_length']))
     return {'id': id}
 
@@ -62,7 +65,7 @@ async def post_form(form: Form):
     event_title = urllib.parse.unquote_plus(form.event_title)
     fields = urllib.parse.unquote_plus(form.fields)
 
-    response = execute(f'SELECT * FROM punchcard.event WHERE host_id = "{form.host_id}" AND title = "{event_title}"')
+    response = execute(f'SELECT * FROM punchcard.event WHERE host_id = "{form.host_id}" AND title = "{event_title}"', 'GET')
 
     if len(response) == 0:
         return {'status': 'error', 'message': 'event does not exist'}
@@ -92,16 +95,17 @@ async def post_form(form: Form):
         {'name': 'fields', 'value': {'stringValue': fields}}
     ]
 
-    return execute('INSERT INTO punchcard.form VALUES(:id, :host_id, :event_title, :fields)', args)
+    return execute('INSERT INTO punchcard.form VALUES(:id, :host_id, :event_title, :fields)', 'POST', args)
     
-
 @app.post('/post-event')
 async def post_event(event: Event):
     title = urllib.parse.unquote_plus(event.title)
     host_name = urllib.parse.unquote_plus(event.host_name)
     fields = json.loads(urllib.parse.unquote_plus(event.fields))
+
+    response = execute(f'SELECT * FROM punchcard.event WHERE host_id = "{event.host_id}" AND title = "{title}"', 'GET')
     
-    if len(execute(f'SELECT * FROM punchcard.event WHERE host_id = "{event.host_id}" AND title = "{title}"')) > 0:
+    if len(response) > 0:
         return {'status': 'error', 'message': 'host already created event of same title'}
 
     required_flag = True
@@ -133,13 +137,13 @@ async def post_event(event: Event):
         {'name': 'fields', 'value': {'stringValue': fields}}
     ]
 
-    return execute(f'INSERT INTO punchcard.event VALUES(:host_id, :title, :host_name, :fields)', args)
+    return execute(f'INSERT INTO punchcard.event VALUES(:host_id, :title, :host_name, :fields)', 'POST', args)
 
 @app.get('/get-forms')
 async def get_forms(host_id: str, event_title: str):
     event_title = urllib.parse.unquote_plus(event_title)
 
-    response = execute(f'SELECT * FROM punchcard.form WHERE host_id = "{host_id}" AND event_title = "{event_title}"')
+    response = execute(f'SELECT * FROM punchcard.form WHERE host_id = "{host_id}" AND event_title = "{event_title}"', 'GET')
     forms = []
 
     for values in response:
@@ -172,3 +176,13 @@ async def get_events(host_id: str):
         events.append(event)
 
     return {'events': events}
+
+@app.delete('/delete-event')
+async def delete_event(host_id: str, event_title: str):
+    event_response = execute(f'DELETE FROM punchcard.event WHERE host_id = "{host_id}" AND title = "{event_title}"', 'DELETE')
+    form_response = execute(f'DELETE FROM punchcard.event WHERE host_id = "{host_id}" AND event_title = "{event_title}"', 'DELETE')
+
+    if event_response['status'] == form_response['status'] == 'success':
+        return event_response
+
+    return {'status': 'error', 'message': 'could not delete event and forms'}
