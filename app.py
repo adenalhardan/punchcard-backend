@@ -184,10 +184,10 @@ async def delete_event(host_id: str, event_title: str):
     if len(response) == 0:
         return {'status': 'error', 'message': 'event does not exist'}
 
-    #event_response = execute(f'DELETE FROM punchcard.event WHERE host_id = "{host_id}" AND title = "{event_title}"', 'DELETE')
-    #form_response = execute(f'DELETE FROM punchcard.event WHERE host_id = "{host_id}" AND event_title = "{event_title}"', 'DELETE')
+    event_response = execute(f'DELETE FROM punchcard.event WHERE host_id = "{host_id}" AND title = "{event_title}"', 'DELETE')
+    form_response = execute(f'DELETE FROM punchcard.form WHERE host_id = "{host_id}" AND event_title = "{event_title}"', 'DELETE')
 
-    #if event_response['status'] == form_response['status'] == 'success':
-     #   return event_response
+    if event_response['status'] == form_response['status'] == 'success':
+        return event_response
 
     return {'status': 'error', 'message': 'could not delete event and forms'}
