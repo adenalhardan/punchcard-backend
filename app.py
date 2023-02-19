@@ -177,6 +177,17 @@ async def get_events(host_id: str):
 
     return {'events': events}
 
+@app.get('/get-form-count')
+async def get_form_count(host_id: str, event_title: str):
+    event_title = urllib.parse.unquote_plus(event_title)
+
+    return rds_client.execute_statement(
+        secretArn = params['database_credentials_secret_store_arn'],
+        database = params['database_name'],
+        resourceArn = params['database_cluster_arn'],
+        sql = f'SELECT COUNT(*) FROM punchcard.form WHERE host_id = {host_id} AND event_title = {event_title}',
+    )
+
 @app.delete('/delete-event')
 async def delete_event(host_id: str, event_title: str):
     event_title = urllib.parse.unquote_plus(event_title)
@@ -188,8 +199,6 @@ async def delete_event(host_id: str, event_title: str):
 
     form_response = execute(f'DELETE FROM punchcard.form WHERE host_id = "{host_id}" AND event_title = "{event_title}"', 'DELETE')
     event_response = execute(f'DELETE FROM punchcard.event WHERE host_id = "{host_id}" AND title = "{event_title}"', 'DELETE')
-
-    return event_response
 
     if event_response['status'] == form_response['status'] == 'success':
         return event_response
