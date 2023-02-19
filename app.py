@@ -182,9 +182,7 @@ async def get_form_count(host_id: str, event_title: str):
     event_title = urllib.parse.unquote_plus(event_title)
 
     response = execute(f'SELECT COUNT(*) FROM punchcard.form WHERE host_id = "{host_id}" AND event_title = "{event_title}"')
-    count = response[0]['longValue']
-
-    return {'count': count}
+    return response
 
 @app.delete('/delete-event')
 async def delete_event(host_id: str, event_title: str):
