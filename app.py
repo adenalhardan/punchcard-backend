@@ -181,6 +181,14 @@ async def get_events(host_id: str):
 async def get_form_count(host_id: str, event_title: str):
     event_title = urllib.parse.unquote_plus(event_title)
 
+    return rds_client.execute_statement(
+        secretArn = params['database_credentials_secret_store_arn'],
+        database = params['database_name'],
+        resourceArn = params['database_cluster_arn'],
+        sql = f'SELECT COUNT(*) FROM punchcard.form WHERE host_id = "{host_id}" AND event_title = "{event_title}"',
+        parameters = []
+    )
+
     response = execute(f'SELECT COUNT(*) FROM punchcard.form WHERE host_id = "{host_id}" AND event_title = "{event_title}"')
     return response
 
