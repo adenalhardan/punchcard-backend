@@ -182,7 +182,7 @@ async def get_form_count(host_id: str, event_title: str):
     event_title = urllib.parse.unquote_plus(event_title)
 
     response = execute(f'SELECT COUNT(*) FROM punchcard.form WHERE host_id = "{host_id}" AND event_title = "{event_title}"')
-    count = response['records'][0][0]['longValue']
+    count = response[0][0]['longValue']
 
     return {'count': count}
 
