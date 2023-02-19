@@ -185,7 +185,7 @@ async def get_form_count(host_id: str, event_title: str):
         secretArn = params['database_credentials_secret_store_arn'],
         database = params['database_name'],
         resourceArn = params['database_cluster_arn'],
-        sql = f'SELECT COUNT(*) FROM punchcard.form WHERE host_id = {host_id} AND event_title = {event_title}',
+        sql = f'SELECT COUNT(*) FROM punchcard.form WHERE host_id = "{host_id}" AND event_title = "{event_title}"',
     )
 
 @app.delete('/delete-event')
