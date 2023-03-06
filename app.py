@@ -109,7 +109,7 @@ async def post_event(event: Event):
     response = execute(f'SELECT * FROM punchcard.event WHERE host_id = "{event.host_id}" AND title = "{title}"', 'GET')
     
     if len(response) > 0:
-        return {'status': 'error', 'message': 'host already created event of same title'}
+        return {'status': 'error', 'message': 'Cannot create event with duplicate title'}
 
     required_flag = True
     
@@ -129,7 +129,7 @@ async def post_event(event: Event):
             required_flag = False
 
     if required_flag:
-        return {'status': 'error', 'message': 'at least one field must be required'}
+        return {'status': 'error', 'message': 'Must have at least one required field'}
     
     fields = json.dumps(fields)
 
