@@ -86,10 +86,10 @@ async def post_form(form: Form):
         field_type, field_presence = event_field['type'], event_field['presence']
 
         if field_presence == 'required' and not value:
-            return {'status': 'error', 'message': name + 'field is required'}
+            return {'status': 'error', 'message': name + ' field is required'}
 
-        if (field_type == 'integer' and type(value) is not int) or (field_type == 'string' and type(value) is not str):
-            return {'status': 'error', 'message': name + 'field is the incorrect type'}
+        if (field_type == 'integer' and not value.isnumeric()):
+            return {'status': 'error', 'message': name + ' field is the incorrect type'}
 
     args = [
         {'name': 'id', 'value': {'stringValue': form.id}},
