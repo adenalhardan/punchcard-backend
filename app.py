@@ -70,7 +70,7 @@ async def post_form(form: Form):
     if len(response) == 0:
         return {'status': 'error', 'message': 'event does not exist'}
     
-    if execute(f'SELECT * FROM punchcard.form WHERE host_id = "{form.host_id}" AND id = "{form.id}"', 'GET'):
+    if execute(f'SELECT * FROM punchcard.form WHERE host_id = "{form.host_id}" AND event_title = "{form.event_title}" AND id = "{form.id}"', 'GET'):
         return {'status': 'error', 'message': 'form already exists'}
 
     event = response[0]
