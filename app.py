@@ -171,6 +171,7 @@ async def get_events(host_id: str):
     events = []
 
     for values in response:
+        return {'a': zip(params['event_keys'], values).items()}
         event = {}
         expired = False
 
