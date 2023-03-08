@@ -170,15 +170,13 @@ async def get_events(host_id: str):
     response = execute(f'SELECT * FROM punchcard.event WHERE host_id = "{host_id}"', 'GET')
     events = []
 
-    return {'a': int(time.time())}
-
     for values in response:
         event = {}
         expired = False
 
         for key, value in zip(params['event_keys'], values):
             if key == 'expiration':
-                
+                return {'a': value['longValue']}
                 if int(time.time()) >= value['longValue']:
                     expired = True
 
