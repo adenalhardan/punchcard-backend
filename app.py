@@ -179,10 +179,11 @@ async def get_events(host_id: str):
                 if int(time.time()) >= value['longValue']:
                     expired = False
 
-            else:
+            elif key == 'fields':
                 event[key] = json.loads(value['stringValue'])
+            else:
+                event[key] = value['stringValue']
             
-
         if not expired:
             events.append(event)
 
@@ -204,7 +205,7 @@ async def delete_event(host_id: str, event_title: str):
         return event_response
 
     return {'status': 'error', 'message': 'could not delete event and forms'}
-'''
+
 @app.on_event('startup')
 @repeat_every(seconds = params['delete_expired_events_every'])
 async def delete_expired_events():
@@ -216,4 +217,3 @@ async def delete_expired_events():
 
         execute(f'DELETE FROM punchcard.form WHERE host_id = "{host_id}" AND event_title = "{title}"', 'DELETE')
         execute(f'DELETE FROM punchcard.form WHERE host_id = "{host_id}" AND event_title = "{title}"', 'DELETE')
-'''
