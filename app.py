@@ -179,9 +179,10 @@ async def get_events(host_id: str):
                 if int(time.time()) >= value['longValue']:
                     expired = False
 
-                continue
-
-            event[key] = value['stringValue']
+            elif key == 'fields':
+                event[key] = json.loads(value['stringValue'])
+            else:
+                event[key] = value['stringValue']
             
 
         if not expired:
