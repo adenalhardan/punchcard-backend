@@ -209,11 +209,11 @@ async def delete_event(host_id: str, event_title: str):
 @app.on_event('startup')
 @repeat_every(seconds = params['delete_expired_events_every'])
 async def delete_expired_events():
-    response = execute(f'SELECT * FROM punchcard.event WHERE expiration >= {int(time.time())}', 'GET')
+    response = execute(f'SELECT * FROM punchcard.event WHERE expiration <= {int(time.time())}', 'GET')
 
     for event in response:
         host_id = event[params['event_keys'].index('host_id')]['stringValue']
         title = event[params['event_keys'].index('title')]['stringValue']
 
         execute(f'DELETE FROM punchcard.form WHERE host_id = "{host_id}" AND event_title = "{title}"', 'DELETE')
-        execute(f'DELETE FROM punchcard.form WHERE host_id = "{host_id}" AND event_title = "{title}"', 'DELETE')
+        execute(f'DELETE FROM punchcard.event WHERE host_id = "{host_id}" AND event_title = "{title}"', 'DELETE')
