@@ -216,4 +216,4 @@ async def delete_expired_events():
         title = event[params['event_keys'].index('title')]['stringValue']
 
         execute(f'DELETE FROM punchcard.form WHERE host_id = "{host_id}" AND event_title = "{title}"', 'DELETE')
-        execute(f'DELETE FROM punchcard.event WHERE host_id = "{host_id}" AND event_title = "{title}"', 'DELETE')
+        execute(f'DELETE FROM punchcard.event WHERE host_id = "{host_id}" AND title = "{title}"', 'DELETE')
