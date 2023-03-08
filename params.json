@@ -13,5 +13,5 @@
     "event_keys": ["host_id", "title", "host_name", "fields", "expiration"],
 
     "event_lifetime": 3600,
-    "delete_expired_events_every": 3600
+    "delete_expired_events_every": 120
 }
