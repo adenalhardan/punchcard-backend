@@ -76,7 +76,7 @@ async def post_form(form: Form):
         return {'status': 'error', 'message': 'form already exists'}
 
     event = response[0]
-    event_fields = json.loads(event[3]['stringValue'])
+    event_fields = json.loads(event[params['event_key'].index('fields')]['stringValue'])
 
     form_fields = json.loads(fields)
 
