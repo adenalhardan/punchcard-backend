@@ -206,9 +206,8 @@ async def delete_event(host_id: str, event_title: str):
 
     return {'status': 'error', 'message': 'could not delete event and forms'}
 
-#@app.on_event('startup')
-#@repeat_every(seconds = params['delete_expired_events_every'])
-@app.delete('/delete_expired_events')
+@app.on_event('startup')
+@repeat_every(seconds = float(params['delete_expired_events_every']))
 async def delete_expired_events():
     response = execute(f'SELECT * FROM punchcard.event WHERE expiration <= {int(time.time())}', 'GET')
 
