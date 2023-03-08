@@ -170,7 +170,7 @@ async def get_events(host_id: str):
     response = execute(f'SELECT * FROM punchcard.event WHERE host_id = "{host_id}"', 'GET')
     events = []
 
-    print(response)
+    return {'test': response}
 
     for values in response:
         event = {}
