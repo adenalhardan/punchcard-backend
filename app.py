@@ -143,7 +143,7 @@ async def post_event(event: Event):
         {'name': 'expiration', 'value': {'longValue': int(time.time()) + params['event_lifetime']}}
     ]
 
-    return execute(f'INSERT INTO punchcard.event VALUES(:host_id, :title, :host_name, :fields)', 'POST', args)
+    return execute(f'INSERT INTO punchcard.event VALUES(:host_id, :title, :host_name, :fields, :expiration)', 'POST', args)
 
 @app.get('/get-forms')
 async def get_forms(host_id: str, event_title: str):
