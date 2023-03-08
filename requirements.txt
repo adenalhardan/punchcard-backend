@@ -3,3 +3,4 @@ uvicorn
 mangum
 boto3
 pydantic
+fastapi-utils

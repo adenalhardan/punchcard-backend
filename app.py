@@ -1,12 +1,14 @@
 import random
 import string
 import json
+import time
 import urllib.parse
 
 from fastapi import FastAPI
 from mangum import Mangum
 import boto3
 from pydantic import BaseModel
+from fastapi_utils.tasks import repeat_every
 
 params = json.load(open('params.json'))
 
@@ -137,7 +139,8 @@ async def post_event(event: Event):
         {'name': 'host_id', 'value': {'stringValue': event.host_id}},
         {'name': 'title', 'value': {'stringValue': title}},
         {'name': 'host_name', 'value': {'stringValue': host_name}},
-        {'name': 'fields', 'value': {'stringValue': fields}}
+        {'name': 'fields', 'value': {'stringValue': fields}},
+        {'name': 'expiration', 'value': {'longValue': int(time.time()) + params['event_lifetime']}}
     ]
 
     return execute(f'INSERT INTO punchcard.event VALUES(:host_id, :title, :host_name, :fields)', 'POST', args)
@@ -171,7 +174,11 @@ async def get_events(host_id: str):
         event = {}
 
         for key, value in zip(params['event_keys'], values):
-            if key == 'fields':
+            if key == 'expiration':
+                if int(time.time()) >= value['longValue']:
+                    continue
+
+            elif key == 'fields':
                 event[key] = json.loads(value['stringValue'])
             else:
                 event[key] = value['stringValue']
@@ -196,3 +203,15 @@ async def delete_event(host_id: str, event_title: str):
         return event_response
 
     return {'status': 'error', 'message': 'could not delete event and forms'}
+
+@app.on_event('startup')
+@repeat_every(seconds = params['delete_expired_events_every'])
+def delete_expired_events():
+    response = execute(f'SELECT * FROM punchcard.event WHERE expiration >= {int(time.time())}', 'GET')
+
+    for event in response:
+        host_id = event[params['event_keys'].index('host_id')]['stringValue']
+        title = event[params['event_keys'].index('title')]['stringValue']
+
+        execute(f'DELETE FROM punchcard.form WHERE host_id = "{host_id}" AND event_title = "{title}"', 'DELETE')
+        execute(f'DELETE FROM punchcard.form WHERE host_id = "{host_id}" AND event_title = "{title}"', 'DELETE')

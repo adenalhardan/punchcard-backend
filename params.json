@@ -10,5 +10,8 @@
     "field_presences": ["required", "optional"],
 
     "form_keys": ["id", "host_id", "event_title", "fields"],
-    "event_keys": ["host_id", "title", "host_name", "fields"]
+    "event_keys": ["host_id", "title", "host_name", "fields", "expiration"],
+
+    "event_lifetime": 3600,
+    "delete_expired_events_every": 3600
 }
