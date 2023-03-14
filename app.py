@@ -73,7 +73,7 @@ async def post_form(form: Form):
         return {'status': 'error', 'message': 'event does not exist'}
     
     if execute(f'SELECT * FROM punchcard.form WHERE host_id = "{form.host_id}" AND event_title = "{form.event_title}" AND id = "{form.id}"', 'GET'):
-        return {'status': 'error', 'message': 'form already exists'}
+        return {'status': 'error', 'message': 'Form already submitted for this event'}
 
     event = response[0]
     event_fields = json.loads(event[params['event_keys'].index('fields')]['stringValue'])
