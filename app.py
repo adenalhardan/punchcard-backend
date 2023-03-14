@@ -176,8 +176,10 @@ async def get_events(host_id: str):
 
         for key, value in zip(params['event_keys'], values):
             if key == 'expiration':
+                event[key] = value['longValue']
+
                 if int(time.time()) >= value['longValue']:
-                    expired = False
+                    expired = True
 
             elif key == 'fields':
                 event[key] = json.loads(value['stringValue'])
