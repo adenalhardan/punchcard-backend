@@ -90,7 +90,7 @@ async def post_form(form: Form):
         if field_presence == 'required' and not value:
             return {'status': 'error', 'message': name + ' field is required'}
 
-        if (field_type == 'integer' and not value.isnumeric()):
+        if (field_type == 'integer' and (value != '' and not value.isnumeric())):
             return {'status': 'error', 'message': name + ' field is the incorrect type'}
 
     args = [
