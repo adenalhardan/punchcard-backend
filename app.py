@@ -31,24 +31,28 @@ handler = Mangum(app)
 rds_client = boto3.client('rds-data', region_name = 'us-west-1')
 
 def execute(sql, type = 'GET', args = []):
-    response = rds_client.execute_statement(
-        secretArn = os.environ.get('database_credentials_secret_store_arn'),
-        database = os.environ.get('database_name'),
-        resourceArn = os.environ.get('database_cluster_arn'),
-        sql = sql,
-        parameters = args
-    )
-    
-    if type in ['POST', 'UPDATE', 'DELETE']:
-        if response['ResponseMetadata']['HTTPStatusCode'] == 200:
-            return {'status': 'success'}  
-        else:
-            return {'status': 'error', 'message': 'could modify into database'}
+    try:
+        response = rds_client.execute_statement(
+            secretArn = os.environ.get('database_credentials_secret_store_arn'),
+            database = os.environ.get('database_name'),
+            resourceArn = os.environ.get('database_cluster_arn'),
+            sql = sql,
+            parameters = args
+        )
+        
+        if type in ['POST', 'UPDATE', 'DELETE']:
+            if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+                return {'status': 'success'}  
+            else:
+                return {'status': 'error', 'message': 'could modify into database'}
 
-    elif type == 'GET':
-        return response['records']
+        elif type == 'GET':
+            return response['records']
 
-    return {'status': 'error', 'message': 'invalid type'}
+        return {'status': 'error', 'message': 'invalid type'}
+        
+    except:
+        return {'status': 'error', 'message': 'database unresponsive'}
 
 @app.get('/')
 async def root():
@@ -68,12 +72,12 @@ async def post_form(form: Form):
     event_title = urllib.parse.unquote_plus(form.event_title)
     fields = urllib.parse.unquote_plus(form.fields)
 
-    response = execute(f'SELECT * FROM punchcard.event WHERE host_id = "{form.host_id}" AND title = "{event_title}"', 'GET')
+    response = execute(f'SELECT * FROM event WHERE host_id = "{form.host_id}" AND title = "{event_title}"')
 
     if len(response) == 0:
         return {'status': 'error', 'message': 'event does not exist'}
     
-    if execute(f'SELECT * FROM punchcard.form WHERE host_id = "{form.host_id}" AND event_title = "{form.event_title}" AND id = "{form.id}"', 'GET'):
+    if execute(f'SELECT * FROM form WHERE host_id = "{form.host_id}" AND event_title = "{form.event_title}" AND id = "{form.id}"'):
         return {'status': 'error', 'message': 'Form already submitted for this event'}
 
     event = response[0]
@@ -101,7 +105,7 @@ async def post_form(form: Form):
         {'name': 'fields', 'value': {'stringValue': fields}}
     ]
 
-    return execute('INSERT INTO punchcard.form VALUES(:id, :host_id, :event_title, :fields)', 'POST', args)
+    return execute('INSERT INTO form VALUES(:id, :host_id, :event_title, :fields)', 'POST', args)
     
 @app.post('/post-event')
 async def post_event(event: Event):
@@ -150,7 +154,7 @@ async def post_event(event: Event):
 async def get_forms(host_id: str, event_title: str):
     event_title = urllib.parse.unquote_plus(event_title)
 
-    response = execute(f'SELECT * FROM punchcard.form WHERE host_id = "{host_id}" AND event_title = "{event_title}"', 'GET')
+    response = execute(f'SELECT * FROM form WHERE host_id = "{host_id}" AND event_title = "{event_title}"')
     forms = []
 
     for values in response:
@@ -168,7 +172,7 @@ async def get_forms(host_id: str, event_title: str):
 
 @app.get('/get-events')
 async def get_events(host_id: str):
-    response = execute(f'SELECT * FROM punchcard.event WHERE host_id = "{host_id}"', 'GET')
+    response = execute(f'SELECT * FROM event WHERE host_id = "{host_id}"')
     events = []
 
     for values in response:
@@ -196,13 +200,13 @@ async def get_events(host_id: str):
 async def delete_event(host_id: str, event_title: str):
     event_title = urllib.parse.unquote_plus(event_title)
 
-    response = execute(f'SELECT * FROM punchcard.event WHERE host_id = "{host_id}" AND title = "{event_title}"', 'GET')
+    response = execute(f'SELECT * FROM event WHERE host_id = "{host_id}" AND title = "{event_title}"')
     
     if len(response) == 0:
         return {'status': 'error', 'message': 'event does not exist'}
 
-    form_response = execute(f'DELETE FROM punchcard.form WHERE host_id = "{host_id}" AND event_title = "{event_title}"', 'DELETE')
-    event_response = execute(f'DELETE FROM punchcard.event WHERE host_id = "{host_id}" AND title = "{event_title}"', 'DELETE')
+    form_response = execute(f'DELETE FROM form WHERE host_id = "{host_id}" AND event_title = "{event_title}"', 'DELETE')
+    event_response = execute(f'DELETE FROM event WHERE host_id = "{host_id}" AND title = "{event_title}"', 'DELETE')
 
     if event_response['status'] == form_response['status'] == 'success':
         return event_response
@@ -212,11 +216,11 @@ async def delete_event(host_id: str, event_title: str):
 @app.on_event('startup')
 @repeat_every(seconds = 300)
 async def delete_expired_events():
-    response = execute(f'SELECT * FROM punchcard.event WHERE expiration <= {int(time.time())}', 'GET')
+    response = execute(f'SELECT * FROM event WHERE expiration <= {int(time.time())}')
 
     for event in response:
         host_id = event[params['event_keys'].index('host_id')]['stringValue']
         title = event[params['event_keys'].index('title')]['stringValue']
 
-        execute(f'DELETE FROM punchcard.form WHERE host_id = "{host_id}" AND event_title = "{title}"', 'DELETE')
-        execute(f'DELETE FROM punchcard.event WHERE host_id = "{host_id}" AND title = "{title}"', 'DELETE')
+        execute(f'DELETE FROM form WHERE host_id = "{host_id}" AND event_title = "{title}"', 'DELETE')
+        execute(f'DELETE FROM event WHERE host_id = "{host_id}" AND title = "{title}"', 'DELETE')

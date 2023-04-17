@@ -1,4 +1,4 @@
-CREATE TABLE punchcard.event (
+CREATE TABLE event (
     host_id VARCHAR(255),
     title VARCHAR(255),
     host_name VARCHAR(255) NOT NULL,
@@ -7,7 +7,7 @@ CREATE TABLE punchcard.event (
     PRIMARY KEY (host_id, title)
 );
 
-CREATE TABLE punchcard.form (
+CREATE TABLE form (
     id VARCHAR(255),
     host_id VARCHAR(255),
     event_title VARCHAR(255),
