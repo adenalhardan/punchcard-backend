@@ -30,7 +30,7 @@ handler = Mangum(app)
 
 rds_client = boto3.client('rds-data', region_name = 'us-west-1')
 
-def execute(sql, type, args = []):
+def execute(sql, type = 'GET', args = []):
     response = rds_client.execute_statement(
         secretArn = os.environ.get('database_credentials_secret_store_arn'),
         database = os.environ.get('database_name'),
@@ -109,7 +109,7 @@ async def post_event(event: Event):
     host_name = urllib.parse.unquote_plus(event.host_name)
     fields = json.loads(urllib.parse.unquote_plus(event.fields))
 
-    response = execute(f'SELECT * FROM punchcard.event WHERE host_id = "{event.host_id}" AND title = "{title}"', 'GET')
+    response = execute(f'SELECT * FROM event WHERE host_id = "{event.host_id}" AND title = "{title}"')
     
     if len(response) > 0:
         return {'status': 'error', 'message': 'Cannot create event with duplicate title'}
@@ -144,7 +144,7 @@ async def post_event(event: Event):
         {'name': 'expiration', 'value': {'longValue': int(time.time()) + params['event_lifetime']}}
     ]
 
-    return execute(f'INSERT INTO punchcard.event VALUES(:host_id, :title, :host_name, :fields, :expiration)', 'POST', args)
+    return execute(f'INSERT INTO event VALUES(:host_id, :title, :host_name, :fields, :expiration)', 'POST', args)
 
 @app.get('/get-forms')
 async def get_forms(host_id: str, event_title: str):
