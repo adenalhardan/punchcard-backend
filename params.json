@@ -1,8 +1,4 @@
 {
-    "database_name": "punchcard",
-    "database_cluster_arn": "arn:aws:rds:us-west-1:648352157129:cluster:punchcard",
-    "database_credentials_secret_store_arn": "arn:aws:secretsmanager:us-west-1:648352157129:secret:rds-db-credentials/cluster-E2JST6UE4XRFDW2SVOKMPWGEIQ/admin/1673905435773-76ZLCx",
-
     "prefix": "punchcard:",
     "id_length": 5,
 

@@ -2,6 +2,7 @@ import random
 import string
 import json
 import time
+import os
 import urllib.parse
 
 from fastapi import FastAPI
@@ -31,9 +32,9 @@ rds_client = boto3.client('rds-data', region_name = 'us-west-1')
 
 def execute(sql, type, args = []):
     response = rds_client.execute_statement(
-        secretArn = params['database_credentials_secret_store_arn'],
-        database = params['database_name'],
-        resourceArn = params['database_cluster_arn'],
+        secretArn = os.environ.get('database_credentials_secret_store_arn'),
+        database = os.environ.get('database_name'),
+        resourceArn = os.environ.get('database_cluster_arn'),
         sql = sql,
         parameters = args
     )
@@ -90,7 +91,7 @@ async def post_form(form: Form):
         if field_presence == 'required' and not value:
             return {'status': 'error', 'message': name + ' field is required'}
 
-        if (field_type == 'integer' and (value != '' and not value.isnumeric())):
+        if (field_type == 'integer' and (value and not value.isnumeric())):
             return {'status': 'error', 'message': name + ' field is the incorrect type'}
 
     args = [
