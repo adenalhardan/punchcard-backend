@@ -1,6 +1,5 @@
 {
-    "prefix": "punchcard:",
-    "id_length": 5,
+    "id_length": 10,
 
     "field_types": ["integer", "string"],
     "field_presences": ["required", "optional"],
