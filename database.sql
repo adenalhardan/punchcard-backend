@@ -3,7 +3,7 @@ CREATE TABLE event (
     title VARCHAR(255),
     host_name VARCHAR(255) NOT NULL,
     fields TEXT NOT NULL,
-    expiration INT UNSIGNED NOT NULL,
+    timestamp INT UNSIGNED NOT NULL,
     PRIMARY KEY (host_id, title)
 );
 

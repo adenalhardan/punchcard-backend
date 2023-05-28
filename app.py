@@ -138,10 +138,10 @@ async def post_event(event: Event):
             {'name': 'title', 'value': {'stringValue': title}},
             {'name': 'host_name', 'value': {'stringValue': host_name}},
             {'name': 'fields', 'value': {'stringValue': fields}},
-            {'name': 'expiration', 'value': {'longValue': int(time.time()) + params['event_lifetime']}}
+            {'name': 'timestamp', 'value': {'longValue': int(time.time())}}
         ]
 
-        return execute(f'INSERT INTO event VALUES(:host_id, :title, :host_name, :fields, :expiration)', 'POST', args)
+        return execute(f'INSERT INTO event VALUES(:host_id, :title, :host_name, :fields, :timestamp)', 'POST', args)
 
     except:
         return {'status': 'error', 'message': 'database is unresponsive'}
@@ -181,10 +181,10 @@ async def get_events(host_id: str):
             expired = False
 
             for key, value in zip(params['event_keys'], values):
-                if key == 'expiration':
+                if key == 'timestamp':
                     event[key] = value['longValue']
 
-                    if int(time.time()) >= value['longValue']:
+                    if int(time.time()) >= value['longValue'] + params['event_lifetime']:
                         expired = True
 
                 elif key == 'fields':
@@ -224,7 +224,7 @@ async def delete_event(host_id: str, event_title: str):
 @app.on_event('startup')
 @repeat_every(seconds = 300)
 async def delete_expired_events():
-    response = execute(f'SELECT * FROM event WHERE expiration <= {int(time.time())}')
+    response = execute(f'SELECT * FROM event WHERE timestamp <= {int(time.time()) - params['event_lifetime']}')
 
     for event in response:
         host_id = event[params['event_keys'].index('host_id')]['stringValue']

@@ -5,7 +5,7 @@
     "field_presences": ["required", "optional"],
 
     "form_keys": ["id", "host_id", "event_title", "fields"],
-    "event_keys": ["host_id", "title", "host_name", "fields", "expiration"],
+    "event_keys": ["host_id", "title", "host_name", "fields", "timestamp"],
 
-    "event_lifetime": 3600
+    "event_lifetime": 86400
 }
