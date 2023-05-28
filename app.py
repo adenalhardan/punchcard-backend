@@ -224,7 +224,8 @@ async def delete_event(host_id: str, event_title: str):
 @app.on_event('startup')
 @repeat_every(seconds = 300)
 async def delete_expired_events():
-    response = execute(f'SELECT * FROM event WHERE timestamp <= {int(time.time()) - params['event_lifetime']}')
+    expired_timestamp = int(time.time()) - params['event_lifetime']
+    response = execute(f'SELECT * FROM event WHERE timestamp <= {expired_timestamp}')
 
     for event in response:
         host_id = event[params['event_keys'].index('host_id')]['stringValue']

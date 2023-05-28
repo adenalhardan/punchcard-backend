@@ -13,5 +13,5 @@ CREATE TABLE form (
     event_title VARCHAR(255),
     fields TEXT NOT NULL,
     PRIMARY KEY (id, host_id, event_title),
-    FOREIGN KEY (host_id, event_title) REFERENCES punchcard.event(host_id, title)
+    FOREIGN KEY (host_id, event_title) REFERENCES event(host_id, title)
 );
