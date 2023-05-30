@@ -43,7 +43,7 @@ def execute(sql, type = 'GET', args = []):
         if response['ResponseMetadata']['HTTPStatusCode'] == 200:
             return {'status': 'success'}  
         else:
-            return {'status': 'error', 'message': 'could modify into database'}
+            return {'status': 'error', 'message': 'Could modify into database'}
 
     elif type == 'GET':
         return response['records']
@@ -98,8 +98,8 @@ async def post_form(form: Form):
 
         return execute('INSERT INTO form VALUES(:id, :host_id, :event_title, :fields)', 'POST', args)
 
-    except:
-        return {'status': 'error', 'message': 'database is unresponsive'}
+    except Exception as error:
+        return {'status': 'error', 'message': str(error)}
     
 @app.post('/post-event')
 async def post_event(event: Event):
@@ -144,7 +144,7 @@ async def post_event(event: Event):
         return execute(f'INSERT INTO event VALUES(:host_id, :title, :host_name, :fields, :timestamp)', 'POST', args)
 
     except:
-        return {'status': 'error', 'message': 'database is unresponsive'}
+        return {'status': 'error', 'message': 'Database is unresponsive'}
 
 @app.get('/get-forms')
 async def get_forms(host_id: str, event_title: str):
@@ -168,7 +168,7 @@ async def get_forms(host_id: str, event_title: str):
         return {'forms': forms}
 
     except:
-        return {'status': 'error', 'message': 'database is unresponsive'}
+        return {'status': 'error', 'message': 'Database is unresponsive'}
 
 @app.get('/get-events')
 async def get_events(host_id: str):
@@ -198,7 +198,7 @@ async def get_events(host_id: str):
         return {'events': events}
 
     except:
-        return {'status': 'error', 'message': 'database is unresponsive'}
+        return {'status': 'error', 'message': 'Database is unresponsive'}
 
 @app.delete('/delete-event')
 async def delete_event(host_id: str, event_title: str):
@@ -219,7 +219,7 @@ async def delete_event(host_id: str, event_title: str):
         return {'status': 'error', 'message': 'could not delete event and forms'}
 
     except:
-        return {'status': 'error', 'message': 'database is unresponsive'}
+        return {'status': 'error', 'message': 'Database is unresponsive'}
 
 @app.on_event('startup')
 @repeat_every(seconds = 300)
