@@ -65,7 +65,9 @@ async def post_form(form: Form):
         event_title = urllib.parse.unquote_plus(form.event_title)
         fields = urllib.parse.unquote_plus(form.fields)
 
-        if not execute(f'SELECT * FROM event WHERE host_id = "{form.host_id}" AND title = "{event_title}"'):
+        response = execute(f'SELECT * FROM event WHERE host_id = "{form.host_id}" AND title = "{event_title}"')
+
+        if len(response) == 0:
             return {'status': 'error', 'message': 'event does not exist'}
         
         if execute(f'SELECT * FROM form WHERE host_id = "{form.host_id}" AND event_title = "{form.event_title}" AND id = "{form.id}"'):
@@ -98,8 +100,8 @@ async def post_form(form: Form):
 
         return execute('INSERT INTO form VALUES(:id, :host_id, :event_title, :fields)', 'POST', args)
 
-    except Exception as error:
-        return {'status': 'error', 'message': str(error)}
+    except:
+        return {'status': 'error', 'message': 'Database is unresponsive'}
     
 @app.post('/post-event')
 async def post_event(event: Event):
