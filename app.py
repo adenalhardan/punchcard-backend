@@ -175,7 +175,7 @@ async def get_forms(host_id: str, event_title: str):
 @app.get('/get-events')
 async def get_events(host_id: str):
     try: 
-        response = execute(f'SELECT * FROM event WHERE host_id = "{host_id}" ORDER BY timestamp DESC')
+        response = execute(f'SELECT * FROM event WHERE host_id = "{host_id}" ORDER BY timestamp ASC')
         events = []
 
         for values in response:
